@@ -5,6 +5,8 @@
 package graphic
 
 import (
+	"embed"
+
 	"github.com/g3n/engine/core"
 	"github.com/g3n/engine/geometry"
 	"github.com/g3n/engine/gls"
@@ -67,7 +69,7 @@ func NewSkybox(data SkyboxData) (*Skybox, error) {
 }
 
 // NewSkybox creates and returns a pointer to a Skybox with the specified textures from an embed.FS filesystem.
-func NewEmbedSkybox(data SkyboxData) (*Skybox, error) {
+func NewEmbedSkybox(data SkyboxData, efs embed.FS) (*Skybox, error) {
 
 	skybox := new(Skybox)
 
@@ -76,7 +78,7 @@ func NewEmbedSkybox(data SkyboxData) (*Skybox, error) {
 	skybox.Graphic.SetCullable(false)
 
 	for i := 0; i < 6; i++ {
-		tex, err := texture.NewTexture2DFromEmbedImage(data.DirAndPrefix + data.Suffixes[i] + "." + data.Extension)
+		tex, err := texture.NewTexture2DFromEmbedImage(data.DirAndPrefix+data.Suffixes[i]+"."+data.Extension, efs)
 		if err != nil {
 			return nil, err
 		}
