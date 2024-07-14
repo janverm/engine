@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/g3n/engine/audio/al"
-	"github.com/g3n/engine/audio/vorbis"
 	"github.com/g3n/engine/renderer"
 	"github.com/g3n/engine/window"
 )
@@ -145,6 +144,6 @@ func (a *Application) openDefaultAudioDevice() error {
 	}
 	// Logs audio library versions
 	log.Info("%s version: %s", al.GetString(al.Vendor), al.GetString(al.Version))
-	log.Info("%s", vorbis.VersionString())
+	log.Info("Native oggvorbis code by Johann Freymuth")
 	return nil
 }

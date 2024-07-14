@@ -3,7 +3,7 @@ package oggvorbis
 import (
 	"io"
 
-	"github.com/jfreymuth/vorbis"
+	"github.com/g3n/engine/audio/vorbis"
 )
 
 // Format contains information about the audio format of an ogg/vorbis file.

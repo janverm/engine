@@ -3,9 +3,6 @@
 The G3N engine audio support currently depends on the following external libraries:
 
 - `OpenAL`        - for spatial audio
-- `libogg`        - for Ogg container format
-- `libvorbis`     - for vorbis decoder support
-- `libvorbisfile` - for reading/decoding ogg vorbis files
 
 These libraries are easily installed in Linux systems using the distribution package manager.
 
@@ -19,11 +16,6 @@ It is recommended to avoid copying them to the Windows system directory.
 
 The library sources were obtained from:
 - http://kcat.strangesoft.net/openal-releases/openal-soft-1.18.2.tar.bz2
-- http://downloads.xiph.org/releases/ogg/libogg-1.3.3.zip
-- http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.5.zip
-
-The original file `libvorbis-1.3.5/win32/VS2010/libogg.props` was changed to setup
-`libogg` version and location.
 
 If you want to build the DLLs from source instead of using the supplied DLLs you
 can use the following procedure:
@@ -60,29 +52,6 @@ can use the following procedure:
    Then select *Build -> Build Solution* in the menu to start the build.
    Once the build is complete the file `OpenAL.dll` should have been generated in the directory `build/Release`.
     
-6. Execute *Visual Studio* and from its menu select *Open -> Project/Solution...*.
-   Select the file `libogg-1.3.3\win32\VS2015\libogg_dynamic.sln`.
-   In the *Visual Studio* toolbar, below the menu, select the build mode *Release*
-   and *x64* architecture.
-   Then select the menu *Build -> Build Solution* to start the build.
-   If during the build *Visual Studio* indicates an error related to
-   the installed platform toolset you may need to retarget the solution,
-   selecting the menu *Project -> Retarget solution"* and then try to build again.
-   If everything goes OK then `libogg.dll` should be in the directory:
-   `libogg-1.3.3\win32\VS2015\x64\Release`.
-
-7. Execute *Visual Studio* and from its menu select *Open -> Project/Solution...*.
-   Select the file `libvorbis-1.3.5\win32\VS2010\vorbis_dynamic.sln`.
-   In the *Visual Studio* toolbar, below the menu, select the build mode *Release*
-   and *x64* architecture.
-   Then select the menu *Build -> Build Solution* to start the build.
-   If during the build *Visual Studio* indicates an error related to
-   the installed platform toolset you may need to retarget the solution,
-   selecting the menu *Project -> Retarget solution"* and then try the build again.
-   If everything goes OK, then `libvorbis.dll` and `libvorbisfile.dll` should be in the directory:
-   `libvorbis-1.3.5\win32\VS2010\x64\Release`.
-
-8. Copy the dlls: `OpenAL32.dll, libogg.dll, libvorbis.dll` and `libvorbisfile.dll`
-   to the directory from which you will execute a G3N application.
+6. Copy the dll: `OpenAL32.dll` to the directory from which you will execute a G3N application.
 
 
