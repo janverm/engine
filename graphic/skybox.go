@@ -66,6 +66,44 @@ func NewSkybox(data SkyboxData) (*Skybox, error) {
 	return skybox, nil
 }
 
+// NewSkybox creates and returns a pointer to a Skybox with the specified textures from an embed.FS filesystem.
+func NewEmbedSkybox(data SkyboxData) (*Skybox, error) {
+
+	skybox := new(Skybox)
+
+	geom := geometry.NewCube(1)
+	skybox.Graphic.Init(skybox, geom, gls.TRIANGLES)
+	skybox.Graphic.SetCullable(false)
+
+	for i := 0; i < 6; i++ {
+		tex, err := texture.NewTexture2DFromEmbedImage(data.DirAndPrefix + data.Suffixes[i] + "." + data.Extension)
+		if err != nil {
+			return nil, err
+		}
+		matFace := material.NewStandard(math32.NewColor("white"))
+		matFace.AddTexture(tex)
+		matFace.SetSide(material.SideBack)
+		matFace.SetUseLights(material.UseLightNone)
+
+		// Disable writes to the depth buffer (call glDepthMask(GL_FALSE)).
+		// This will cause every other object to draw over the skybox, making it always appear behind everything else.
+		// It doesn't matter how small/big the skybox is as long as it's visible by the camera (within near/far planes).
+		matFace.SetDepthMask(false)
+
+		skybox.AddGroupMaterial(skybox, matFace, i)
+	}
+
+	// Creates uniforms
+	skybox.uniMVm.Init("ModelViewMatrix")
+	skybox.uniMVPm.Init("MVP")
+	skybox.uniNm.Init("NormalMatrix")
+
+	// The skybox should always be rendered last among the opaque objects
+	skybox.SetRenderOrder(100)
+
+	return skybox, nil
+}
+
 // RenderSetup is called by the engine before drawing the skybox geometry
 // It is responsible to updating the current shader uniforms with
 // the model matrices.

@@ -6,6 +6,7 @@
 package texture
 
 import (
+	"embed"
 	"fmt"
 	"image"
 	"image/draw"
@@ -94,6 +95,22 @@ func NewTexture2DFromImage(imgfile string) (*Texture2D, error) {
 	return t, nil
 }
 
+// NewTexture2DFromImage creates and returns a pointer to a new Texture2D
+// using the specified image file as data.
+// Supported image formats are: PNG, JPEG and GIF.
+func NewTexture2DFromEmbedImage(imgfile string, fs embed.FS) (*Texture2D, error) {
+
+	// Decodes image file into RGBA8
+	rgba, err := DecodeEmbedImage(imgfile, fs)
+	if err != nil {
+		return nil, err
+	}
+
+	t := newTexture2D()
+	t.SetFromRGBA(rgba)
+	return t, nil
+}
+
 // NewTexture2DFromRGBA creates a new texture from a pointer to an RGBA image object.
 func NewTexture2DFromRGBA(rgba *image.RGBA) *Texture2D {
 
@@ -167,6 +184,18 @@ func (t *Texture2D) SetImage(imgfile string) error {
 
 	// Decodes image file into RGBA8
 	rgba, err := DecodeImage(imgfile)
+	if err != nil {
+		return err
+	}
+	t.SetFromRGBA(rgba)
+	return nil
+}
+
+// SetEmbedImage sets a new image for this texture
+func (t *Texture2D) SetEmbedImage(imgfile string, fs embed.FS) error {
+
+	// Decodes image file into RGBA8
+	rgba, err := DecodeEmbedImage(imgfile, fs)
 	if err != nil {
 		return err
 	}
@@ -336,6 +365,28 @@ func DecodeImage(imgfile string) (*image.RGBA, error) {
 	}
 
 	// Converts image to RGBA format
+	rgba := image.NewRGBA(img.Bounds())
+	if rgba.Stride != rgba.Rect.Size().X*4 {
+		return nil, fmt.Errorf("unsupported stride")
+	}
+	draw.Draw(rgba, rgba.Bounds(), img, image.Point{0, 0}, draw.Src)
+	return rgba, nil
+}
+
+// DecodeEmbedImage reads and decodes the specified image file from an embed.FS filesystem into RGBA8.
+// The supported image files are PNG, JPEG and GIF.
+func DecodeEmbedImage(imgfile string, fs embed.FS) (*image.RGBA, error) {
+	file, err := fs.Open(imgfile)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	img, _, err := image.Decode(file)
+	if err != nil {
+		return nil, err
+	}
+
 	rgba := image.NewRGBA(img.Bounds())
 	if rgba.Stride != rgba.Rect.Size().X*4 {
 		return nil, fmt.Errorf("unsupported stride")
