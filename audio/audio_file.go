@@ -360,7 +360,7 @@ func (af *AudioFile) openEmbedVorbis(filename string, efs *embed.FS) error {
 func (af *AudioFile) openVorbis(filename string) error {
 
 	// Try to open file as ogg vorbis
-	vf, err := oggvorbis.Fopen(filename)
+	vf, err := oggvorbis.Open(filename)
 	if err != nil {
 		return err
 	}
