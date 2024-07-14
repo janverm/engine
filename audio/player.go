@@ -11,6 +11,7 @@ package audio
 import "C"
 
 import (
+	"embed"
 	"io"
 	"time"
 	"unsafe"
@@ -42,10 +43,11 @@ type Player struct {
 // NewPlayer creates and returns a pointer to a new audio player object
 // which will play the audio encoded in the specified file.
 // Currently it supports wave and Ogg Vorbis formats.
-func NewPlayer(filename string) (*Player, error) {
+func NewPlayer(filename string, efs *embed.FS) (*Player, error) {
 
-	// Try to open audio file
-	af, err := NewAudioFile(filename)
+	var af *AudioFile
+	var err error
+	af, err = NewAudioFile(filename, efs)
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +138,7 @@ func (p *Player) Play() error {
 	// Starts playing and starts goroutine to fill buffers
 	al.SourcePlay(p.source)
 	go p.run()
-	
+
 	return nil
 }
 
