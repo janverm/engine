@@ -126,7 +126,7 @@ func (af *AudioFile) Read(pdata unsafe.Pointer, nbytes int) (int, error) {
 	// Decodes Ogg vorbis
 	decoded := 0
 	for decoded < nbytes {
-		n, _, err := oggvorbis.Read(af.vorbisf, unsafe.Pointer(&bs[decoded]), nbytes-decoded, false, 2, true)
+		n, _, err := oggvorbis.Read(af.vorbisf, unsafe.Pointer(&bs[decoded]), nbytes-decoded)
 		// Error
 		if err != nil {
 			return 0, err
@@ -351,7 +351,35 @@ func (af *AudioFile) openEmbedWave(filename string, efs *embed.FS) error {
 }
 
 func (af *AudioFile) openEmbedVorbis(filename string, efs *embed.FS) error {
-	fmt.Println("WIP")
+	vf, err := oggvorbis.OpenEmbedded(filename, efs)
+	if err != nil {
+		return err
+	}
+
+	var info oggvorbis.VorbisInfo
+	err = oggvorbis.Info(vf, -1, &info)
+	if err != nil {
+		return err
+	}
+	if info.Channels == 1 {
+		af.info.Format = al.FormatMono16
+	} else if info.Channels == 2 {
+		af.info.Format = al.FormatStereo16
+	} else {
+		return fmt.Errorf("Unsupported number of channels")
+	}
+	totalSamples, err := oggvorbis.PcmTotal(vf, -1)
+	if err != nil {
+		oggvorbis.Clear(vf)
+		return nil
+	}
+
+	af.vorbisf = vf
+	af.info.SampleRate = info.Rate
+	af.info.BitsSample = 16
+	af.info.Channels = info.Channels
+	af.info.DataSize = int(totalSamples) * info.Channels * 2
+	af.info.TotalTime = float64(totalSamples) / float64(info.Rate)
 	return nil
 }
 

@@ -5,11 +5,12 @@
 package text
 
 import (
+	"embed"
 	"image"
 	"image/color"
 	"image/draw"
-	"io/ioutil"
 	"math"
+	"os"
 	"strings"
 
 	"github.com/g3n/engine/math32"
@@ -61,7 +62,17 @@ const (
 func NewFont(ttfFile string) (*Font, error) {
 
 	// Reads font bytes
-	fontBytes, err := ioutil.ReadFile(ttfFile)
+	fontBytes, err := os.ReadFile(ttfFile)
+	if err != nil {
+		return nil, err
+	}
+	return NewFontFromData(fontBytes)
+}
+
+func NewEmbedFont(ttfFile string, efs *embed.FS) (*Font, error) {
+
+	// Reads font bytes
+	fontBytes, err := efs.ReadFile(ttfFile)
 	if err != nil {
 		return nil, err
 	}

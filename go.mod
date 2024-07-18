@@ -1,4 +1,4 @@
-module github.com/g3m/engine
+module github.com/g3n/engine
 
 go 1.18
 
