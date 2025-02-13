@@ -5,7 +5,11 @@
 // Package renderer implements the scene renderer.
 package renderer
 
-import "github.com/g3n/engine/gls"
+import (
+	"github.com/g3n/engine/camera"
+	"github.com/g3n/engine/core"
+	"github.com/g3n/engine/gls"
+)
 
 type Postprocessor struct {
 	Width    int32
@@ -41,25 +45,24 @@ func (r *Renderer) CreatePostprocessor(width, height int32, vertexShaderSource, 
 	pp.Tex = r.gs.GenTexture()
 	r.gs.BindTexture(gls.TEXTURE_2D, pp.Tex)
 	r.gs.TexImage2D(gls.TEXTURE_2D, 0, gls.RGB, width, height, gls.RGB, gls.UNSIGNED_BYTE, nil)
-	r.gs.TexParameteri(gls.TEXTURE_2D, gls.TEXTURE_WRAP_S, gls.CLAMP_TO_EDGE)
-	r.gs.TexParameteri(gls.TEXTURE_2D, gls.TEXTURE_WRAP_T, gls.CLAMP_TO_EDGE)
+	//	r.gs.TexParameteri(gls.TEXTURE_2D, gls.TEXTURE_WRAP_S, gls.CLAMP_TO_EDGE)
+	//	r.gs.TexParameteri(gls.TEXTURE_2D, gls.TEXTURE_WRAP_T, gls.CLAMP_TO_EDGE)
 	r.gs.TexParameteri(gls.TEXTURE_2D, gls.TEXTURE_MIN_FILTER, gls.NEAREST)
 	r.gs.TexParameteri(gls.TEXTURE_2D, gls.TEXTURE_MAG_FILTER, gls.NEAREST)
-	r.gs.BindTexture(gls.TEXTURE_2D, 0)
 	r.gs.FramebufferTexture2D(gls.COLOR_ATTACHMENT0, gls.TEXTURE_2D, pp.Tex)
+	r.gs.BindTexture(gls.TEXTURE_2D, 0)
 
 	// attach depth and stencil buffers
 	rbo := r.gs.GenRenderbuffer()
 	r.gs.BindRenderbuffer(rbo)
 	r.gs.RenderbufferStorage(gls.DEPTH24_STENCIL8, int(width), int(height))
-	r.gs.BindRenderbuffer(0)
 	r.gs.FramebufferRenderbuffer(gls.DEPTH_STENCIL_ATTACHMENT, rbo)
+	r.gs.BindRenderbuffer(0)
 
 	// check the framebuffer status
 	if r.gs.CheckFramebufferStatus() != gls.FRAMEBUFFER_COMPLETE {
 		log.Fatal("Can't create frame buffer")
 	}
-	r.gs.BindFramebuffer(0)
 
 	// create the "screen" quad
 	vbo := r.gs.GenBuffer()
@@ -95,25 +98,30 @@ func (r *Renderer) CreatePostprocessor(width, height int32, vertexShaderSource, 
 		log.Fatal("can't create shader: %e", err)
 	}
 
+	r.gs.BindFramebuffer(0)
+
 	return pp
 }
 
-func (pp *Postprocessor) Render(fbwidth, fbheight int, render func()) {
-	// render into the low-res texture
+func (pp *Postprocessor) Render(fbwidth, fbheight int32, scene core.INode, cam camera.ICamera) {
+	// render into the texture
 	gs := pp.Renderer.gs
 	gs.Viewport(0, 0, pp.Width, pp.Height)
 	gs.BindFramebuffer(pp.Fbo)
+	gs.ClearColor(0.1, 0.1, 0.1, 1.0)
+	gs.Clear(gls.COLOR_BUFFER_BIT | gls.DEPTH_BUFFER_BIT)
 	gs.Enable(gls.DEPTH_TEST)
-	render()
+	pp.Renderer.Render(scene, cam)
 
 	// show texture on screen
 	gs.Viewport(0, 0, int32(fbwidth), int32(fbheight))
 	gs.BindFramebuffer(0)
-	gs.ClearColor(1, 1, 1, 1)
+	gs.ClearColor(1., 1., 1., 1.)
 	gs.Clear(gls.COLOR_BUFFER_BIT)
+
 	gs.UseProgram(pp.Prg)
+	gs.BindVertexArray(pp.Vao)
 	gs.Disable(gls.DEPTH_TEST)
 	gs.BindTexture(gls.TEXTURE_2D, pp.Tex)
-	gs.BindVertexArray(pp.Vao)
-	gs.DrawArrays(gls.TRIANGLES, 0, int32(len(pp.screen)/8))
+	gs.DrawArrays(gls.TRIANGLES, 0, 6)
 }
