@@ -18,6 +18,8 @@ type Postprocessor struct {
 	Tex      uint32
 	Vao      uint32
 	Prg      *gls.Program
+	ppTime   gls.Uniform
+	fTime    float32
 	screen   []float32
 	Renderer *Renderer
 }
@@ -93,6 +95,8 @@ func (r *Renderer) CreatePostprocessor(width, height int32, vertexShaderSource, 
 	pp.Prg = r.gs.NewProgram()
 	pp.Prg.AddShader(gls.VERTEX_SHADER, vertexShaderSource)
 	pp.Prg.AddShader(gls.FRAGMENT_SHADER, fragmentShaderSource)
+	pp.fTime = 0.0
+	pp.ppTime.Init("ppTime")
 	err := pp.Prg.Build()
 	if err != nil {
 		log.Fatal("can't create shader: %e", err)
@@ -103,7 +107,9 @@ func (r *Renderer) CreatePostprocessor(width, height int32, vertexShaderSource, 
 	return pp
 }
 
-func (pp *Postprocessor) Render(fbwidth, fbheight int32, scene core.INode, cam camera.ICamera) {
+func (pp *Postprocessor) Render(fbwidth, fbheight int32, scene core.INode, cam camera.ICamera, fTime float32) {
+	// pass timing info to shader
+	pp.fTime = fTime
 	// render into the texture
 	gs := pp.Renderer.gs
 	gs.Viewport(0, 0, pp.Width, pp.Height)
@@ -123,5 +129,6 @@ func (pp *Postprocessor) Render(fbwidth, fbheight int32, scene core.INode, cam c
 	gs.BindVertexArray(pp.Vao)
 	gs.Disable(gls.DEPTH_TEST)
 	gs.BindTexture(gls.TEXTURE_2D, pp.Tex)
+	gs.Uniform1fv(pp.ppTime.Location(gs), 1, &pp.fTime)
 	gs.DrawArrays(gls.TRIANGLES, 0, 6)
 }
