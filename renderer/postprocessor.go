@@ -20,6 +20,8 @@ type Postprocessor struct {
 	Prg      *gls.Program
 	ppTime   gls.Uniform
 	fTime    float32
+	ppYres   gls.Uniform
+	fYres    float32
 	screen   []float32
 	Renderer *Renderer
 }
@@ -97,6 +99,8 @@ func (r *Renderer) CreatePostprocessor(width, height int32, vertexShaderSource, 
 	pp.Prg.AddShader(gls.FRAGMENT_SHADER, fragmentShaderSource)
 	pp.fTime = 0.0
 	pp.ppTime.Init("ppTime")
+	pp.fYres = float32(height)
+	pp.ppYres.Init("ppYres")
 	err := pp.Prg.Build()
 	if err != nil {
 		log.Fatal("can't create shader: %e", err)
@@ -130,5 +134,6 @@ func (pp *Postprocessor) Render(fbwidth, fbheight int32, scene core.INode, cam c
 	gs.Disable(gls.DEPTH_TEST)
 	gs.BindTexture(gls.TEXTURE_2D, pp.Tex)
 	gs.Uniform1fv(pp.ppTime.Location(gs), 1, &pp.fTime)
+	gs.Uniform1fv(pp.ppYres.Location(gs), 1, &pp.fYres)
 	gs.DrawArrays(gls.TRIANGLES, 0, 6)
 }
