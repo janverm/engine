@@ -114,6 +114,8 @@ func (r *Renderer) CreatePostprocessor(width, height int32, vertexShaderSource, 
 func (pp *Postprocessor) Render(fbwidth, fbheight int32, scene core.INode, cam camera.ICamera, fTime float32) {
 	// pass timing info to shader
 	pp.fTime = fTime
+	pp.fYres = float32(fbheight)
+
 	// render into the texture
 	gs := pp.Renderer.gs
 	gs.Viewport(0, 0, pp.Width, pp.Height)
