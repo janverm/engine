@@ -120,8 +120,8 @@ func (pp *Postprocessor) Render(fbwidth, fbheight int32, scene core.INode, cam c
 	gs := pp.Renderer.gs
 	gs.Viewport(0, 0, pp.Width, pp.Height)
 	gs.BindFramebuffer(pp.Fbo)
-	gs.ClearColor(0.1, 0.1, 0.1, 1.0)
-	gs.Clear(gls.COLOR_BUFFER_BIT | gls.DEPTH_BUFFER_BIT)
+	gs.ClearColor(0., 0., 0., 1.0)
+	gs.Clear(gls.COLOR_BUFFER_BIT | gls.DEPTH_BUFFER_BIT | gls.STENCIL_BUFFER_BIT)
 	gs.Enable(gls.DEPTH_TEST)
 	pp.Renderer.Render(scene, cam)
 
